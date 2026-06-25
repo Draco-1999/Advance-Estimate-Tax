@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estimated Tax — Inkle Internal Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#6B4EFF;--purple-l:#EEE9FF;--purple-ll:#F7F5FF;
+  --green:#1D9E75;--green-l:#E1F5EE;
+  --amber:#E88C30;--amber-l:#FEF3E2;
+  --red:#E24B4A;--red-l:#FCEBEB;
+  --blue:#2D7DD2;--blue-l:#E8F2FC;
+  --teal:#0E9BAF;--teal-l:#E0F6FA;
+  --ink:#0d0d0d;--ink2:#333;--ink3:#555;--ink4:#888;--ink5:#bbb;
+  --bg:#fafaf8;--card:#fff;--border:#e8e8e5;--border2:#d0d0cc;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:54px;background:rgba(250,250,248,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.02em;text-decoration:none;color:var(--ink)}
+.nav-logo span{color:var(--purple)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-dots{display:flex;gap:5px}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--border);cursor:pointer;transition:.2s}
+.ndot.active{background:var(--purple)}
+.ndot.done{background:var(--green)}
+.nav-ch{font-size:11px;color:var(--ink4);font-weight:500}
+.prog-bar{position:fixed;top:54px;left:0;right:0;height:3px;background:var(--border);z-index:199}
+.prog-fill{height:3px;background:linear-gradient(90deg,var(--purple),var(--blue));transition:width .3s;width:0%}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:7rem 1.5rem 5rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 50% -5%,#EEE9FF,transparent 70%);pointer-events:none}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);background:var(--purple-l);padding:4px 14px;border-radius:99px;margin-bottom:1.5rem;display:inline-block}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,6vw,66px);font-weight:800;line-height:1.05;letter-spacing:-.03em;max-width:780px;margin-bottom:1.25rem}
+.hero h1 em{font-style:normal;color:var(--purple)}
+.hero-sub{font-size:clamp(14px,1.8vw,17px);color:var(--ink3);max-width:520px;line-height:1.8;margin-bottom:2.5rem}
+.hero-stats{display:flex;gap:2rem;margin-bottom:2.5rem;flex-wrap:wrap;justify-content:center}
+.hstat-n{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--purple)}
+.hstat-l{font-size:12px;color:var(--ink4);margin-top:2px}
+.hero-btn{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:14px 34px;font-size:15px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;transition:.15s}
+.hero-btn:hover{background:#333;transform:translateY(-1px)}
+.scroll-hint{margin-top:3.5rem;font-size:12px;color:var(--ink5);animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* SECTION */
+.section{max-width:800px;margin:0 auto;padding:5rem 1.5rem;border-bottom:1px solid var(--border)}
+.section:last-of-type{border-bottom:none}
+
+/* CH HEADER */
+.ch-hdr{display:flex;align-items:center;gap:14px;background:var(--purple-l);border-left:4px solid var(--purple);border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:2.25rem}
+.ch-num{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--purple);line-height:1}
+.ch-info h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--ink)}
+.ch-info p{font-size:13px;color:var(--ink4);margin-top:2px}
+
+/* TYPOGRAPHY */
+.stag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);display:block;margin-bottom:6px;margin-top:2.25rem}
+h3{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,30px);font-weight:700;line-height:1.15;letter-spacing:-.02em;margin-bottom:1rem;color:var(--ink)}
+h3 em{font-style:normal;color:var(--purple)}
+h4{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin:1.5rem 0 .6rem}
+p{font-size:15.5px;color:var(--ink2);line-height:1.8;margin-bottom:1rem;max-width:680px}
+p strong{color:var(--ink);font-weight:600}
+
+/* CALLOUT */
+.callout{border-left:3px solid var(--purple);background:var(--purple-l);border-radius:0 10px 10px 0;padding:12px 16px;margin:1.25rem 0;font-size:14.5px;line-height:1.75;color:var(--ink)}
+.callout.green{border-color:var(--green);background:var(--green-l)}
+.callout.amber{border-color:var(--amber);background:var(--amber-l)}
+.callout.red{border-color:var(--red);background:var(--red-l)}
+.callout.blue{border-color:var(--blue);background:var(--blue-l)}
+.callout.teal{border-color:var(--teal);background:var(--teal-l)}
+
+/* SCENARIO CARD */
+.scenario{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1.5rem 0;position:relative;overflow:hidden}
+.scenario::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--blue))}
+.sc-head{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.sc-icon{font-size:24px}
+.sc-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--ink)}
+.sc-sub{font-size:11px;color:var(--ink4);margin-top:2px}
+.scenario p{font-size:14.5px;color:var(--ink3);margin-bottom:.75rem;max-width:100%}
+.scenario p:last-child{margin-bottom:0}
+.scenario p strong{color:var(--ink)}
+
+/* MATH */
+.math{background:#f0f0ee;border-radius:10px;padding:1rem 1.25rem;margin:.75rem 0}
+.mrow{display:flex;justify-content:space-between;align-items:flex-start;padding:5px 0;font-size:13.5px;color:var(--ink3);border-bottom:1px solid var(--border);gap:12px}
+.mrow:last-child{border:none;font-weight:600;color:var(--ink);font-size:14px}
+.mrow.add{color:var(--red)}
+.mrow.sub-row{color:var(--green)}
+.mrow.res{background:var(--amber-l);border-radius:6px;padding:7px 9px;margin-top:4px;border:none}
+.mrow.res2{background:var(--purple-l);border-radius:6px;padding:7px 9px;margin-top:4px;border:none}
+.mlabel{flex:1;line-height:1.5}
+.mval{font-weight:600;white-space:nowrap}
+.msub{font-size:11px;color:var(--ink4);margin-top:2px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;margin:1.25rem 0;font-size:13.5px}
+.tbl th{background:var(--ink);color:#fff;padding:9px 12px;text-align:left;font-weight:500}
+.tbl th:first-child{border-radius:6px 0 0 0}
+.tbl th:last-child{border-radius:0 6px 0 0}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--ink3);vertical-align:top;line-height:1.6}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--purple-ll)}
+.hl{color:var(--purple);font-weight:600}
+.hlg{color:var(--green);font-weight:600}
+.hlr{color:var(--red);font-weight:600}
+.hla{color:var(--amber);font-weight:600}
+
+/* TIMELINE */
+.timeline{margin:1.25rem 0}
+.tli{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.tldot{width:36px;height:36px;border-radius:50%;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;margin-top:2px;font-family:'Syne',sans-serif}
+.tll{font-weight:600;color:var(--ink);font-size:15px;margin-bottom:3px}
+.tld{font-size:13.5px;color:var(--ink4);line-height:1.65}
+
+/* REVEAL */
+.rev-q{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:14.5px;font-weight:500;color:var(--ink);transition:.15s;margin-bottom:6px;gap:10px}
+.rev-q:hover{border-color:var(--purple);background:var(--purple-ll)}
+.rev-q.open{border-color:var(--purple);border-radius:10px 10px 0 0;margin-bottom:0}
+.rev-arr{color:var(--purple);font-size:18px;transition:.2s;flex-shrink:0}
+.rev-q.open .rev-arr{transform:rotate(90deg)}
+.rev-body{display:none;background:var(--purple-l);border:1px solid var(--purple);border-top:none;border-radius:0 0 10px 10px;padding:12px 16px;font-size:13.5px;color:var(--ink2);line-height:1.8;margin-bottom:6px}
+
+/* FLIP CARDS */
+.flipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;margin:1rem 0}
+.flipcard{perspective:700px;height:145px;cursor:pointer}
+.flipcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:.5s}
+.flipcard.flipped .flipcard-inner{transform:rotateY(180deg)}
+.flipcard-front,.flipcard-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:1rem;text-align:center;font-size:13px;line-height:1.5}
+.flipcard-front{background:var(--card);border:1.5px solid var(--border);color:var(--ink);font-weight:500}
+.flipcard-front:hover{border-color:var(--purple);background:var(--purple-ll)}
+.flipcard-back{background:var(--purple);color:#fff;transform:rotateY(180deg);font-size:12.5px}
+.flip-hint{font-size:11px;color:var(--ink4);margin-bottom:10px}
+
+/* ACTIVITY */
+.activity{background:linear-gradient(135deg,var(--purple-ll) 0%,var(--blue-l) 100%);border:1.5px solid var(--purple);border-radius:14px;padding:1.5rem;margin:2rem 0}
+.act-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;display:block}
+.activity h4{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin:0 0 8px}
+.activity p.act-p{font-size:14px;color:var(--ink2);margin-bottom:1rem;max-width:100%;line-height:1.7}
+.act-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.aopt{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:11px 14px;cursor:pointer;font-size:14px;color:var(--ink);text-align:left;transition:.15s;font-family:'Inter',sans-serif;line-height:1.5}
+.aopt:hover:not(:disabled){border-color:var(--purple);background:var(--purple-ll)}
+.aopt:disabled{cursor:default}
+.aopt.correct{border-color:var(--green);background:var(--green-l);color:#085041;font-weight:500}
+.aopt.wrong{border-color:var(--red);background:var(--red-l);color:#791F1F;font-weight:500}
+.aopt.reveal{border-color:var(--green);background:var(--green-l);color:#085041}
+.act-fb{display:none;font-size:13.5px;line-height:1.75;padding:11px 14px;border-radius:9px;margin-top:8px}
+.act-fb.ok{background:var(--green-l);color:#085041;border:1px solid #5DCAA5}
+.act-fb.no{background:var(--red-l);color:#791F1F;border:1px solid #F09595}
+
+/* MATCH */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.75rem 0}
+.match-grid h5{font-size:11px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.mi{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--ink);cursor:pointer;transition:.15s;min-height:46px;display:flex;align-items:center;line-height:1.45}
+.mi:hover{border-color:var(--purple)}
+.mi.sel{border-color:var(--purple);background:var(--purple-l)}
+.mi.mok{border-color:var(--green);background:var(--green-l);color:#085041;cursor:default}
+.mi.mno{border-color:var(--red);background:var(--red-l);color:#791F1F}
+.match-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;margin-top:8px;font-family:'Inter',sans-serif}
+.match-btn:disabled{background:var(--border2);cursor:not-allowed}
+.match-res{font-size:13px;margin-top:8px;line-height:1.7}
+
+/* SORT */
+.sortlist{list-style:none;display:flex;flex-direction:column;gap:8px;margin:.75rem 0}
+.sitem{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:14px;color:var(--ink);cursor:grab;display:flex;align-items:center;gap:10px;transition:.15s;user-select:none;line-height:1.5}
+.sitem:hover{border-color:var(--purple)}
+.sitem.dragging{opacity:.35;cursor:grabbing}
+.sitem.over{border-color:var(--purple);background:var(--purple-l)}
+.shandle{color:var(--ink5);font-size:16px;flex-shrink:0}
+.sort-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif}
+.sort-res{font-size:13px;margin-top:8px;line-height:1.7}
+
+/* CALC */
+.calc-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1.5rem 0}
+.calc-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.cfield{flex:1;min-width:170px}
+.cfield label{font-size:11px;font-weight:700;color:var(--ink4);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.cfield input,.cfield select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'Inter',sans-serif;color:var(--ink);background:var(--bg);outline:none;transition:.15s}
+.cfield input:focus,.cfield select:focus{border-color:var(--purple);background:#fff}
+.calc-res{background:var(--purple-l);border-radius:10px;padding:1rem 1.25rem}
+.cr-lbl{font-size:10px;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.cr-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--purple)}
+.cr-note{font-size:12px;color:var(--ink4);margin-top:4px}
+
+/* BIG STAT */
+.bigstat{text-align:center;padding:1.75rem 0}
+.bs-n{font-family:'Syne',sans-serif;font-size:clamp(54px,10vw,90px);font-weight:800;color:var(--purple);line-height:1;letter-spacing:-.04em}
+.bs-l{font-size:14px;color:var(--ink4);margin-top:.5rem}
+
+/* ADJUSTMENTS EXPLAINER */
+.adj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:1.25rem 0}
+.adj-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;transition:.15s}
+.adj-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 4px 20px rgba(107,78,255,.08)}
+.adj-icon{font-size:24px;margin-bottom:8px}
+.adj-name{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:4px}
+.adj-desc{font-size:12.5px;color:var(--ink3);line-height:1.6}
+.adj-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-top:6px}
+.adj-tag.add{background:var(--red-l);color:var(--red)}
+.adj-tag.sub{background:var(--green-l);color:var(--green)}
+.adj-tag.neutral{background:var(--blue-l);color:var(--blue)}
+
+/* PROGRESS STEPPER */
+.stepper{display:flex;align-items:center;gap:0;margin:1.5rem 0;flex-wrap:wrap}
+.step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:80px;cursor:pointer}
+.step-dot{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink4);transition:.2s;font-family:'Syne',sans-serif}
+.step.active .step-dot{background:var(--purple);color:#fff}
+.step.done .step-dot{background:var(--green);color:#fff}
+.step-label{font-size:11px;color:var(--ink4);margin-top:5px;text-align:center}
+.step-line{flex:1;height:2px;background:var(--border);min-width:20px}
+.step-line.done{background:var(--green)}
+
+/* NOL VISUAL */
+.nol-visual{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1rem 0}
+.nol-year{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center}
+.nol-year-label{font-size:11px;color:var(--ink4);font-weight:600;text-transform:uppercase;margin-bottom:6px}
+.nol-amount{font-family:'Syne',sans-serif;font-size:24px;font-weight:800}
+.nol-year.loss .nol-amount{color:var(--red)}
+.nol-year.profit .nol-amount{color:var(--green)}
+.nol-year.tax .nol-amount{color:var(--purple)}
+.nol-desc{font-size:11.5px;color:var(--ink4);margin-top:4px;line-height:1.5}
+
+/* TICKER */
+.ticker{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;border-radius:99px;padding:7px 16px;font-size:12px;font-weight:500;z-index:99;opacity:0;transition:.3s;pointer-events:none}
+.ticker.show{opacity:1}
+
+/* END */
+.end-section{text-align:center;padding:4rem 1.5rem;max-width:800px;margin:0 auto}
+.end-logo{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.end-logo span{color:var(--purple)}
+.end-sub{font-size:13px;color:var(--ink4);margin-bottom:2.5rem}
+.end-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:2rem}
+.ec{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+.ec-n{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--purple)}
+.ec-l{font-size:11px;color:var(--ink4);margin-top:3px}
+
+hr.div{border:none;border-top:1px solid var(--border);margin:2rem 0}
+@media(max-width:600px){
+  .section{padding:3.5rem 1.25rem}
+  .flipgrid,.adj-grid{grid-template-columns:1fr 1fr}
+  .match-grid,.nol-visual{grid-template-columns:1fr}
+  .calc-row{flex-direction:column}
+  .hero-stats{gap:1.25rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="#top">inkle <span>—</span></a>
+  <div class="nav-right">
+    <span class="nav-ch" id="nav-ch">Intro</span>
+    <div class="nav-dots" id="nav-dots"></div>
+  </div>
+</nav>
+<div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+<div class="ticker" id="ticker"></div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <span class="eyebrow">Tax · Accounting · Support — Internal Training</span>
+  <h1>Why does the IRS want money <em>every quarter?</em></h1>
+  <p class="hero-sub">The full story on estimated taxes — from the absolute basics to the stuff that actually trips people up. Interactive, scenario-based, and zero assumed knowledge.</p>
+  <div class="hero-stats">
+    <div><div class="hstat-n">9</div><div class="hstat-l">Chapters</div></div>
+    <div><div class="hstat-n">14</div><div class="hstat-l">Activities</div></div>
+    <div><div class="hstat-n">~50</div><div class="hstat-l">Minutes</div></div>
+    <div><div class="hstat-n">0</div><div class="hstat-l">Prior knowledge needed</div></div>
+  </div>
+  <button class="hero-btn" onclick="document.getElementById('ch1').scrollIntoView({behavior:'smooth'})">Start learning ↓</button>
+  <p class="scroll-hint">scroll to begin ↓</p>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 1 — IRS MINDSET
+══════════════════════════════════ -->
+<section class="section" id="ch1" data-ch="1" data-title="IRS Mindset">
+  <div class="ch-hdr"><div class="ch-num">01</div><div class="ch-info"><h2>The IRS Mindset</h2><p>Why does any of this exist?</p></div></div>
+
+  <span class="stag">The Foundation</span>
+  <h3>The IRS is not a villain. It's just <em>impatient.</em></h3>
+  <p>The US government runs on tax money — roads, military, social security, the FDA checking your food. But tax returns are filed in <strong>April</strong>. Once a year. The government can't wait a whole year to pay its bills.</p>
+  <p>So the IRS built a rule: <strong>if you're going to owe tax, pay it as you earn it.</strong> Throughout the year. Not in one April lump sum. This is the <strong>Pay As You Go (PAYG)</strong> principle, and everything in estimated taxes flows from it.</p>
+  <div class="callout">💡 <strong>Employees vs. businesses:</strong> Employees have tax withheld from every paycheck automatically — they never think about this. Businesses? No one withholds anything. The company keeps all its money until it pays the IRS. Estimated taxes are the fix.</div>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🍕</span><div><div class="sc-title">The Pizza Shop Analogy</div><div class="sc-sub">Why paying once a year is a problem</div></div></div>
+    <p>You open a pizza shop. All year: $200K revenue, $150K expenses, $50K profit. You spend your cash on equipment, salaries, rent. You don't think about taxes.</p>
+    <p>Then April arrives. Your accountant says: <em>"You owe $10,500."</em> Where does that come from? You've already spent it.</p>
+    <p><strong>The IRS invented estimated taxes precisely to prevent this scenario.</strong> Pay $2,625 every quarter. Nobody gets a shock. Cash flows steadily to the government. Everyone goes home happy.</p>
+  </div>
+
+  <h3 style="margin-top:2rem;">The magic number: <em>$500</em></h3>
+  <p>The rule kicks in only if your company expects to owe <strong>$500 or more</strong> in federal income tax for the year (§6655). Below that — no payments required, no penalty.</p>
+  <div class="bigstat"><div class="bs-n">$500</div><div class="bs-l">Minimum expected tax before quarterly payments are required (§6655)</div></div>
+
+  <div class="activity" id="act1">
+    <span class="act-label">🎯 Quick Check — Activity 1 of 14</span>
+    <h4>Why do businesses need to pay estimated taxes when employees don't?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act1',this,false)">Because businesses earn more and owe more tax overall</button>
+      <button class="aopt" onclick="doAct('act1',this,true)">Because no employer withholds from business income — without estimates, they'd only pay once a year in April</button>
+      <button class="aopt" onclick="doAct('act1',this,false)">Because the IRS trusts employees more than business owners</button>
+      <button class="aopt" onclick="doAct('act1',this,false)">Estimated taxes are optional — just a recommended best practice</button>
+    </div>
+    <div class="act-fb" id="act1-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 2 — FOUR DATES
+══════════════════════════════════ -->
+<section class="section" id="ch2" data-ch="2" data-title="The Four Dates">
+  <div class="ch-hdr"><div class="ch-num">02</div><div class="ch-info"><h2>The Four Dates</h2><p>When exactly does money move?</p></div></div>
+
+  <h3>Four times a year. Same dates. <em>Every year.</em></h3>
+  <p>For a calendar-year corporation (most of our clients), the due dates are fixed. Miss them → underpayment penalty. Know them → avoid it.</p>
+
+  <div class="timeline">
+    <div class="tli"><div class="tldot">Q1</div><div><div class="tll">April 15 — First installment</div><div class="tld">Covers Jan–Mar income. Same day as individual returns — easy to remember. 25% of annual estimate due.</div></div></div>
+    <div class="tli"><div class="tldot">Q2</div><div><div class="tll">June 16 — Second installment</div><div class="tld"><strong>Cumulative 50%</strong> of the full annual estimate must be paid by this date (Q1 + Q2 together). Q2 covers only 2 months but the cumulative bar is 50%. Feels harsh. It is.</div></div></div>
+    <div class="tli"><div class="tldot">Q3</div><div><div class="tll">September 15 — Third installment</div><div class="tld">Cumulative 75% of annual estimate paid. Covers June–August income.</div></div></div>
+    <div class="tli"><div class="tldot">Q4</div><div><div class="tll">December 15 — Final installment</div><div class="tld">C-corps pay in <strong>December</strong>, not January. 100% of annual estimate should be paid. Don't confuse with the individual January 15 deadline.</div></div></div>
+  </div>
+
+  <div class="callout amber">⚠️ <strong>The Q2 trap everyone falls into:</strong> Q2 only covers April–May (2 months) but the cumulative payment due is 50% of the whole year. The IRS designed it this way. Just accept it and build it into your workflow.</div>
+
+  <div class="rev-q" onclick="toggleRev(this)"><span>What about fiscal year clients (e.g. FYE March 31)?</span><span class="rev-arr">›</span></div>
+  <div class="rev-body">Fiscal year companies have shifted due dates. Q1 is due on the 15th of the 4th month of their fiscal year. FYE March 31 → Q1 due July 15, Q2 due Sep 16, Q3 due Dec 15, Q4 due Mar 15. Always check the FYE before using any due date.</div>
+
+  <div class="rev-q" onclick="toggleRev(this)"><span>Can you skip a quarter if cash is tight?</span><span class="rev-arr">›</span></div>
+  <div class="rev-body">Technically yes — but the IRS charges an underpayment penalty for missed quarters. The penalty compounds daily using the federal short-term rate + 3%. It's usually small but completely avoidable. Better to pay and not wonder.</div>
+
+  <div class="activity" id="act2">
+    <span class="act-label">🎯 Quick Check — Activity 2 of 14</span>
+    <h4>By June 16 (Q2), what percentage of the full annual estimate must have been paid in total?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act2',this,false)">25% — just Q2's installment</button>
+      <button class="aopt" onclick="doAct('act2',this,true)">50% — Q1 and Q2 combined</button>
+      <button class="aopt" onclick="doAct('act2',this,false)">75% — three of four quarters</button>
+      <button class="aopt" onclick="doAct('act2',this,false)">100% — pay it all upfront by June</button>
+    </div>
+    <div class="act-fb" id="act2-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 3 — THE CALCULATION
+══════════════════════════════════ -->
+<section class="section" id="ch3" data-ch="3" data-title="The Calculation">
+  <div class="ch-hdr"><div class="ch-num">03</div><div class="ch-info"><h2>The Calculation</h2><p>Two methods. One safe. One accurate.</p></div></div>
+
+  <h3>The IRS doesn't want perfection. It wants <em>effort.</em></h3>
+  <p>You don't need to know exactly what a company will earn this year. You just need to pick the right method and calculate reasonably. Two options:</p>
+
+  <table class="tbl">
+    <thead><tr><th>Method</th><th>Formula</th><th>When to use</th><th>Penalty risk</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">Prior Year Safe Harbor</td><td>Last year's tax ÷ 4 per quarter</td><td>Company paid tax last year</td><td>Zero — IRS can't touch you</td></tr>
+      <tr><td class="hl">Current Year Projection</td><td>Projected this year's tax × 25%</td><td>No prior year, or prior year = $0</td><td>Low if projections are honest</td></tr>
+    </tbody>
+  </table>
+  <div class="callout green">✅ <strong>Always try safe harbor first.</strong> It's the fastest, safest, and requires zero guessing about the current year. Only switch to projection when there's literally no prior year base.</div>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🏢</span><div><div class="sc-title">Maple Stack Inc. — safe harbor in action</div><div class="sc-sub">Scenario</div></div></div>
+    <p>Maple Stack paid $24,000 in federal tax last year. This year is looking better. Doesn't matter.</p>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Prior year tax (Form 1120, Line 31)</span><span class="mval">$24,000</span></div>
+      <div class="mrow"><span class="mlabel">Per quarter (÷ 4)</span><span class="mval">$6,000</span></div>
+      <div class="mrow res"><span class="mlabel">Q2 payment (cumulative $12,000 = 50%)</span><span class="mval" style="color:var(--purple)">$6,000</span></div>
+    </div>
+    <p>Even if Maple Stack ends up owing $60,000 for this year — <strong>zero underpayment penalty.</strong> Safe harbor protected them completely.</p>
+  </div>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🚀</span><div><div class="sc-title">Orbit Labs Corp. — first year, no prior base</div><div class="sc-sub">Scenario — current year projection</div></div></div>
+    <p>Orbit Labs incorporated January 2026. No prior year, no prior tax. Safe harbor base = $0. Must project.</p>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Projected full-year taxable income</span><span class="mval">$300,000</span></div>
+      <div class="mrow"><span class="mlabel">Federal rate (flat C-corp)</span><span class="mval">21%</span></div>
+      <div class="mrow"><span class="mlabel">Projected annual tax</span><span class="mval">$63,000</span></div>
+      <div class="mrow"><span class="mlabel">Q1 paid (25%)</span><span class="mval">$15,750</span></div>
+      <div class="mrow res"><span class="mlabel">Q2 payment (50% cumulative minus Q1)</span><span class="mval" style="color:var(--purple)">$15,750</span></div>
+    </div>
+  </div>
+
+  <!-- CALC -->
+  <div class="calc-wrap">
+    <h4>🧮 Live Calculator — try your own numbers</h4>
+    <div class="calc-row">
+      <div class="cfield"><label>Method</label>
+        <select id="cm" onchange="calcUpdate()">
+          <option value="prior">Prior Year Safe Harbor</option>
+          <option value="current">Current Year Projection</option>
+        </select>
+      </div>
+      <div class="cfield" id="cf-p"><label>Prior Year Tax ($)</label><input type="number" id="cv-p" value="24000" oninput="calcUpdate()"></div>
+      <div class="cfield" id="cf-c" style="display:none"><label>Projected Taxable Income ($)</label><input type="number" id="cv-c" value="300000" oninput="calcUpdate()"></div>
+      <div class="cfield"><label>Q1 Already Paid ($)</label><input type="number" id="cv-q1" value="0" oninput="calcUpdate()"></div>
+    </div>
+    <div class="calc-res">
+      <div class="cr-lbl">Q2 Payment Due</div>
+      <div class="cr-val" id="cr-val">$6,000</div>
+      <div class="cr-note" id="cr-note"></div>
+    </div>
+  </div>
+
+  <div class="activity" id="act3">
+    <span class="act-label">🎯 Quick Check — Activity 3 of 14</span>
+    <h4>A company paid $40,000 in federal tax last year. Q1 was paid. What is Q2 under safe harbor?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act3',this,false)">$20,000 — half the annual tax</button>
+      <button class="aopt" onclick="doAct('act3',this,true)">$10,000 — one quarter of $40,000</button>
+      <button class="aopt" onclick="doAct('act3',this,false)">$8,400 — 21% of $40,000</button>
+      <button class="aopt" onclick="doAct('act3',this,false)">$0 — Q1 payment already covers Q2</button>
+    </div>
+    <div class="act-fb" id="act3-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 4 — BOOK-TO-TAX ADJUSTMENTS
+══════════════════════════════════ -->
+<section class="section" id="ch4" data-ch="4" data-title="Book vs Tax">
+  <div class="ch-hdr"><div class="ch-num">04</div><div class="ch-info"><h2>Book vs. Tax — The Adjustments</h2><p>Why the IRS sees a completely different number</p></div></div>
+
+  <span class="stag">The Most Important Chapter</span>
+  <h3>Your books say one thing. The IRS <em>calculates something different.</em></h3>
+  <p>This is the part that surprises people most — even experienced ones. A company's accounting books show a profit or loss. But the IRS does <strong>not tax accounting profit.</strong> It taxes <strong>taxable income</strong>, calculated by its own rules.</p>
+  <p>The difference between what your books show and what the IRS taxes is made up of <strong>book-to-tax adjustments</strong>. Some add income back in. Some reduce it. Here are the main ones you'll encounter:</p>
+
+  <div class="adj-grid">
+    <div class="adj-card">
+      <div class="adj-icon">💻</div>
+      <div class="adj-name">§174 R&E Costs</div>
+      <div class="adj-desc">Offshore dev spend expensed on books but must be amortized over 15 years for IRS. Huge add-back.</div>
+      <span class="adj-tag add">Adds to income</span>
+    </div>
+    <div class="adj-card">
+      <div class="adj-icon">🍽️</div>
+      <div class="adj-name">Meals & Entertainment</div>
+      <div class="adj-desc">Only 50% of business meals are deductible for tax. If books show 100%, the other 50% gets added back.</div>
+      <span class="adj-tag add">Adds to income</span>
+    </div>
+    <div class="adj-card">
+      <div class="adj-icon">🚫</div>
+      <div class="adj-name">Discontinued / One-Time Expenses</div>
+      <div class="adj-desc">Severance, shutdown costs, legal settlements — these may hit the books but have special IRS treatment.</div>
+      <span class="adj-tag neutral">Varies</span>
+    </div>
+    <div class="adj-card">
+      <div class="adj-icon">📉</div>
+      <div class="adj-name">Depreciation Differences</div>
+      <div class="adj-desc">Tax depreciation (MACRS) often differs from book depreciation. Can add or reduce taxable income.</div>
+      <span class="adj-tag neutral">Can go either way</span>
+    </div>
+    <div class="adj-card">
+      <div class="adj-icon">🔁</div>
+      <div class="adj-name">NOL Carryforward</div>
+      <div class="adj-desc">Past losses carried forward — reduces taxable income up to 80% of current year. Covered in Ch 5.</div>
+      <span class="adj-tag sub">Reduces income</span>
+    </div>
+    <div class="adj-card">
+      <div class="adj-icon">💰</div>
+      <div class="adj-name">Stock-Based Compensation</div>
+      <div class="adj-desc">Treated differently in books vs. tax returns. Can reduce taxable income significantly for tech startups.</div>
+      <span class="adj-tag sub">Often reduces income</span>
+    </div>
+  </div>
+
+  <div class="callout blue">📌 <strong>Key mindset:</strong> Never look at a company's P&L and assume that's what the IRS taxes. Always ask: what adjustments apply? The two numbers can be wildly different — especially for our clients.</div>
+
+  <hr class="div">
+  <h3>Meals & Entertainment — the <em>50% rule everyone forgets</em></h3>
+  <p>A company spends $40,000 on client dinners, team lunches, and entertainment this year. On the books: $40,000 expense. Looks fully deducted. But the IRS says <strong>only 50% of business meals are deductible.</strong></p>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🍽️</span><div><div class="sc-title">MealTime — meals & entertainment add-back</div><div class="sc-sub">Simple but commonly missed</div></div></div>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Meals & entertainment per books</span><span class="mval">$40,000</span></div>
+      <div class="mrow"><span class="mlabel">IRS-allowed deduction (50%)</span><span class="mval">$20,000</span></div>
+      <div class="mrow add"><span class="mlabel">Add-back to taxable income</span><span class="mval">+ $20,000</span></div>
+    </div>
+    <p>It's small compared to §174 — but it's real, it's consistent, and it's commonly overlooked. Always check the meals line.</p>
+  </div>
+
+  <hr class="div">
+  <h3>Discontinued expenses — when <em>a shutdown creates a surprise</em></h3>
+  <p>Sometimes a company shuts down a product line, lays off a team, or settles a legal dispute. These create large one-time expenses on the books. The tax treatment depends on what exactly happened — but they always need to be checked.</p>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🚫</span><div><div class="sc-title">Vertix Corp — shutting down a division</div><div class="sc-sub">One-time discontinued expenses</div></div></div>
+    <p>Vertix shut down its hardware division in Q1. They recorded $200,000 in severance, asset write-downs, and contract termination fees. Their books show a big loss.</p>
+    <p>The IRS treats these differently: some portions are deductible in the current year, others must be capitalized or spread. The net result is their taxable income is <strong>higher than the book loss suggests</strong> — even before §174.</p>
+    <div class="callout amber" style="margin-top:1rem">⚠️ When you see one-time or discontinuation charges on a P&L — flag them. Don't assume they're fully deductible. Always escalate to tax review before finalizing the estimate.</div>
+  </div>
+
+  <div class="activity" id="act4">
+    <span class="act-label">🎯 Quick Check — Activity 4 of 14</span>
+    <h4>A company spends $60,000 on business meals in 2026. How much is added back to taxable income?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act4',this,false)">$0 — meals are fully deductible</button>
+      <button class="aopt" onclick="doAct('act4',this,false)">$60,000 — meals are not deductible at all</button>
+      <button class="aopt" onclick="doAct('act4',this,true)">$30,000 — only 50% of meals are deductible</button>
+      <button class="aopt" onclick="doAct('act4',this,false)">$12,600 — 21% of $60,000</button>
+    </div>
+    <div class="act-fb" id="act4-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 5 — SECTION 174
+══════════════════════════════════ -->
+<section class="section" id="ch5" data-ch="5" data-title="Section 174">
+  <div class="ch-hdr"><div class="ch-num">05</div><div class="ch-info"><h2>Section 174 — The Big One</h2><p>Offshore dev spend and the 15-year amortization trap</p></div></div>
+
+  <span class="stag">The Offshore R&E Bomb</span>
+  <h3>A startup with a book loss of $200K can owe <em>$19,950 by June 16.</em></h3>
+  <p>This is the most important thing in this entire session. Read it slowly.</p>
+  <p>The IRS says: if your company pays people to create software, conduct research, or develop technology — that spend creates <strong>intellectual property</strong>, something of lasting value. You can't deduct it all in one year. You have to spread it out.</p>
+  <p>For <strong>offshore</strong> work: spread over <strong>15 years</strong>, with a mid-year convention. For <strong>US-based</strong> work: immediate full deduction (restored by the OBBBA). The gap between these two is enormous.</p>
+
+  <div class="callout red">🚨 <strong>§174 foreign R&E:</strong> Offshore R&D costs → capitalized → amortized over 15 years → mid-year convention (÷ 2 in Year 1). Only 1/30th deductible in Year 1. Everything else → added back to income.</div>
+
+  <h4>Why ÷ 15 and then ÷ 2?</h4>
+  <p><strong>÷ 15:</strong> The IRS assigns a 15-year useful life to foreign R&E. So you spread the cost over 15 years.<br>
+  <strong>÷ 2:</strong> The "mid-year convention" — the IRS assumes you started the work on July 1 of the year, regardless of when you actually started. So Year 1 = only half a year of amortization.</p>
+  <p>Together: $600,000 in offshore dev → only $600,000 ÷ 15 ÷ 2 = <strong>$20,000</strong> deductible in Year 1. The other $580,000 gets added back to taxable income.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Location of work</th><th>§174 rule</th><th>Year 1 deduction on $600K</th></tr></thead>
+    <tbody>
+      <tr><td>🇺🇸 US-based</td><td class="hlg">Immediate full deduction</td><td>$600,000</td></tr>
+      <tr><td>🌍 Offshore (India, Eastern Europe, etc.)</td><td class="hlr">15-year amortization</td><td>~$20,000</td></tr>
+    </tbody>
+  </table>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">💻</span><div><div class="sc-title">Driftwave Global — the §174 flip</div><div class="sc-sub">Book loss → serious taxable income</div></div></div>
+    <p>Driftwave reports a $200,000 net loss on books. But $500,000 went to an offshore dev firm in Bangalore.</p>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Book net loss</span><span class="mval" style="color:var(--red)">($200,000)</span></div>
+      <div class="mrow add"><span class="mlabel">§174 add-back (only $16,667 of $500K deductible: 500K ÷ 15 ÷ 2)</span><span class="mval">+ $483,333</span></div>
+      <div class="mrow res"><span class="mlabel">IRS taxable income</span><span class="mval" style="color:var(--amber)">$283,333</span></div>
+      <div class="mrow"><span class="mlabel">Federal tax @ 21%</span><span class="mval">$59,500</span></div>
+      <div class="mrow res2"><span class="mlabel">Q2 cumulative estimate (50%)</span><span class="mval" style="color:var(--purple);font-weight:700">~$19,950</span></div>
+    </div>
+    <p>That's a company with a book <em>loss</em> of $200K owing nearly <strong>$20,000</strong> by June 16. This is the §174 story.</p>
+  </div>
+
+  <div class="callout amber">🔍 <strong>The question to always ask:</strong> "Where is your development team based?" If the answer is anywhere outside the US — run the §174 calculation. Do not skip this step.</div>
+
+  <!-- FLIP CARDS — §174 -->
+  <h4 style="margin-top:2rem">§174 deep dives — tap each card</h4>
+  <p class="flip-hint">Click or tap to flip</p>
+  <div class="flipgrid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Does §174 apply to SaaS companies?</div><div class="flipcard-back">Yes. Software = R&E in IRS eyes. Any offshore product dev, backend engineering, or infra work falls under §174 regardless of what you call it.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">US invoice, but offshore work — which rule applies?</div><div class="flipcard-back">Foreign R&E. What matters is where the work is performed, not where the invoice comes from. Code written in Chennai = foreign R&E, even if billed through a US agency.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What happens in Years 2–15?</div><div class="flipcard-back">From Year 2 to Year 15 you deduct the full annual amount ($600K ÷ 15 = $40K/yr). Year 16 gets the final half-year ($20K). Total across all years = $600K exactly.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Domestic R&E after the OBBBA?</div><div class="flipcard-back">Fully deductible immediately again — the OBBBA restored this. So a startup with a US dev team pays no §174 penalty. Only offshore work still faces 15-year amortization.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Can a company argue its offshore spend isn't R&E?</div><div class="flipcard-back">Only if the work is clearly routine maintenance or non-experimental. Building a product or technology? The IRS almost always calls it R&E. Don't push this without a tax attorney.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What's the formula to memorize?</div><div class="flipcard-back">Year 1 deduction = Offshore spend ÷ 15 ÷ 2. Add-back = Offshore spend − Year 1 deduction. Add-back flips the book income to taxable income.</div></div></div>
+  </div>
+
+  <div class="activity" id="act5">
+    <span class="act-label">🎯 Scenario — Activity 5 of 14</span>
+    <h4>A startup: $500K revenue, $800K expenses ($600K offshore dev). What's the approximate taxable income?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act5',this,false)">($300,000) — the book loss stands, no tax owed</button>
+      <button class="aopt" onclick="doAct('act5',this,false)">$0 — §174 exactly offsets the loss</button>
+      <button class="aopt" onclick="doAct('act5',this,true)">~$280,000 — §174 add-back of $580K flips the $300K book loss</button>
+      <button class="aopt" onclick="doAct('act5',this,false)">$600,000 — the full offshore spend becomes taxable income</button>
+    </div>
+    <div class="act-fb" id="act5-fb" data-exp="Book loss = $500K − $800K = ($300K). §174: $600K ÷ 15 ÷ 2 = $20K allowed. Add-back = $580K. Taxable income = ($300K) + $580K = $280K. Annual tax ≈ $58,800."></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 6 — NOL
+══════════════════════════════════ -->
+<section class="section" id="ch6" data-ch="6" data-title="NOL Carryforwards">
+  <div class="ch-hdr"><div class="ch-num">06</div><div class="ch-info"><h2>NOL Carryforwards</h2><p>Using past losses to cut today's tax bill</p></div></div>
+
+  <span class="stag">The Tax Voucher</span>
+  <h3>Lost money in a previous year? The IRS gives you a <em>voucher.</em></h3>
+  <p>When a company has a net operating loss — it lost more money than it made in a year, after all IRS adjustments — the IRS says: <strong>"We can't take tax from you this year. But hold onto that loss — use it to reduce taxes in a future profitable year."</strong></p>
+  <p>This is a <strong>Net Operating Loss (NOL) carryforward</strong>. It doesn't disappear. It accumulates year over year until the company can use it.</p>
+
+  <div class="callout green">📌 Most seed-stage startups have NOL carryforwards. They lose money for 1–3 years before becoming profitable. That pile of accumulated losses is a real, valuable tax asset — always check for it.</div>
+
+  <!-- NOL VISUAL EXAMPLE — Year by year -->
+  <h4>A startup's journey — year by year</h4>
+  <div class="nol-visual">
+    <div class="nol-year loss">
+      <div class="nol-year-label">2023 — Year 1</div>
+      <div class="nol-amount">($180K)</div>
+      <div class="nol-desc">Net Operating Loss<br>NOL bank: $180K</div>
+    </div>
+    <div class="nol-year loss">
+      <div class="nol-year-label">2024 — Year 2</div>
+      <div class="nol-amount">($90K)</div>
+      <div class="nol-desc">Another loss<br>NOL bank: $270K total</div>
+    </div>
+    <div class="nol-year profit">
+      <div class="nol-year-label">2025 — Year 3</div>
+      <div class="nol-amount">+$150K</div>
+      <div class="nol-desc">Finally profitable!<br>Can use $120K of NOL (80%)</div>
+    </div>
+    <div class="nol-year tax">
+      <div class="nol-year-label">2025 — Tax result</div>
+      <div class="nol-amount">$6,300</div>
+      <div class="nol-desc">Tax on $30K remaining income<br>$150K NOL still banked</div>
+    </div>
+  </div>
+
+  <hr class="div">
+  <h3>The 80% cap — the <em>one rule you must memorize</em></h3>
+  <p>Here's the catch: the IRS doesn't let you use your full NOL to zero out all taxable income. Under TCJA rules (post-2017 losses), you can offset <strong>maximum 80% of current year taxable income</strong>. The remaining 20% is always taxable.</p>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">📊</span><div><div class="sc-title">Pinnacle Corp — NOL + §174 together</div><div class="sc-sub">The two adjustments interacting</div></div></div>
+    <p>Pinnacle has both a large NOL carryforward AND offshore dev spend. Watch how they interact:</p>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Book net loss (2026)</span><span class="mval" style="color:var(--red)">($50,000)</span></div>
+      <div class="mrow add"><span class="mlabel">§174 add-back ($400K offshore spend, $13,333 allowed)</span><span class="mval">+ $386,667</span></div>
+      <div class="mrow res"><span class="mlabel">Taxable income before NOL</span><span class="mval" style="color:var(--amber)">$336,667</span></div>
+      <div class="mrow sub-row"><span class="mlabel">NOL carryforward available</span><span class="mval">$300,000</span></div>
+      <div class="mrow sub-row"><span class="mlabel">80% cap: max usable = 80% × $336,667</span><span class="mval">− $269,333</span></div>
+      <div class="mrow res"><span class="mlabel">Taxable income after NOL</span><span class="mval" style="color:var(--amber)">$67,334</span></div>
+      <div class="mrow"><span class="mlabel">Federal tax @ 21%</span><span class="mval">$14,140</span></div>
+      <div class="mrow res2"><span class="mlabel">Q2 cumulative estimate (50%)</span><span class="mval" style="color:var(--purple);font-weight:700">~$7,070</span></div>
+      <div class="mrow"><span class="mlabel">Remaining NOL carries to 2027</span><span class="mval" style="color:var(--green)">$30,667</span></div>
+    </div>
+    <p>Without the §174 analysis, someone might have said $0. Without the NOL, they'd have overpaid. <strong>Both adjustments matter. Always run both.</strong></p>
+  </div>
+
+  <!-- FLIP CARDS — NOL -->
+  <h4>NOL — tap to flip</h4>
+  <p class="flip-hint">Click or tap to reveal</p>
+  <div class="flipgrid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Do post-2017 NOLs expire?</div><div class="flipcard-back">No — they carry forward indefinitely. Pre-2018 NOLs had a 20-year limit AND could offset 100% of income (no 80% cap). Most of our startup clients have post-2017 losses.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Which comes first — §174 or NOL?</div><div class="flipcard-back">§174 first. Always calculate taxable income with all add-backs first. THEN apply the 80% NOL cap to that final taxable income number. Order is non-negotiable.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Where do you find the NOL on a return?</div><div class="flipcard-back">Form 1120, Line 29a shows the NOL deduction taken. Schedule K or attached schedules show the full carryforward balance. Prior returns may have carryforward worksheets.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Can an NOL ever fully eliminate estimated taxes?</div><div class="flipcard-back">Rarely. Even a massive NOL can only offset 80% of taxable income. The remaining 20% is always taxable. And if §174 generated the taxable income — it's usually a large enough number that 20% still matters.</div></div></div>
+  </div>
+
+  <div class="activity" id="act6">
+    <span class="act-label">🎯 Quick Check — Activity 6 of 14</span>
+    <h4>A company has $200,000 taxable income and a $300,000 NOL. How much NOL can be used this year?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act6',this,false)">$300,000 — use it all, wipe out income and create a new loss</button>
+      <button class="aopt" onclick="doAct('act6',this,false)">$200,000 — exactly match the taxable income</button>
+      <button class="aopt" onclick="doAct('act6',this,true)">$160,000 — limited to 80% of $200,000</button>
+      <button class="aopt" onclick="doAct('act6',this,false)">$100,000 — limited to 50% under TCJA</button>
+    </div>
+    <div class="act-fb" id="act6-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 7 — WHEN IS IT $0?
+══════════════════════════════════ -->
+<section class="section" id="ch7" data-ch="7" data-title="When It's $0">
+  <div class="ch-hdr"><div class="ch-num">07</div><div class="ch-info"><h2>When Is the Answer $0?</h2><p>Fast exits vs. dangerous traps</p></div></div>
+
+  <h3>Most mistakes happen when someone assumes <em>$0 without checking.</em></h3>
+
+  <table class="tbl">
+    <thead><tr><th>Situation</th><th>Estimate needed?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Prior year AND current year genuine losses, no §174 flip</td><td class="hlg">No</td><td>No taxable income, below $500 floor</td></tr>
+      <tr><td>Prior year tax $0, current year also projects $0</td><td class="hlg">No</td><td>Safe harbor base $0, projection also $0</td></tr>
+      <tr><td>Company dissolved before Q2 due date</td><td class="hlg">No</td><td>Short year — Q2 installment not required</td></tr>
+      <tr><td>Pre-revenue startup, no significant contractor spend</td><td class="hlg">Likely No</td><td>Minimal income, minimal §174 risk</td></tr>
+      <tr><td>"Loss company" with large offshore contractor spend</td><td class="hlr">Check first</td><td>§174 can flip a book loss to taxable income</td></tr>
+      <tr><td>Prior year $0 but this year profitable</td><td class="hlr">Yes — current year</td><td>No safe harbor base → must project</td></tr>
+      <tr><td>Loss company with large meals / entertainment</td><td class="hlr">Check</td><td>50% disallowed meals add to taxable income</td></tr>
+      <tr><td>Company had a big one-time discontinuation charge</td><td class="hlr">Check</td><td>IRS treatment may differ from book treatment</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout red">🚨 <strong>The single most dangerous assumption:</strong> "They're losing money so no estimate needed." This is wrong for any client with offshore R&E spend, large meals charges, or unusual one-time expenses. Always run the adjustments before concluding $0.</div>
+
+  <div class="scenario">
+    <div class="sc-head"><span class="sc-icon">🎯</span><div><div class="sc-title">"It's $0, right?" (It's not.)</div><div class="sc-sub">The trap scenario everyone falls into</div></div></div>
+    <p>Client messages us in June: <em>"We're burning cash, definitely not profitable — no estimated tax, right?"</em></p>
+    <p>We check: $800K revenue, $1.1M expenses = $300K book loss. Plus $40K in meals. Plus $700K to a dev firm in Eastern Europe.</p>
+    <div class="math">
+      <div class="mrow"><span class="mlabel">Book net loss</span><span class="mval" style="color:var(--red)">($300,000)</span></div>
+      <div class="mrow add"><span class="mlabel">§174 add-back: $700K × (1 − 1/30) ≈ $676,667</span><span class="mval">+ $676,667</span></div>
+      <div class="mrow add"><span class="mlabel">Meals add-back: $40K × 50% disallowed</span><span class="mval">+ $20,000</span></div>
+      <div class="mrow res"><span class="mlabel">Taxable income before NOL</span><span class="mval" style="color:var(--amber)">$396,667</span></div>
+      <div class="mrow"><span class="mlabel">Federal tax @ 21%</span><span class="mval">$83,300</span></div>
+      <div class="mrow res2"><span class="mlabel">Q2 cumulative estimate (50%)</span><span class="mval" style="color:var(--purple);font-weight:700">~$41,650</span></div>
+    </div>
+    <p>The client's assumption would have cost them ~$41,650 in a missed estimate plus a penalty. Our check saved them from both.</p>
+  </div>
+
+  <div class="activity" id="act7">
+    <span class="act-label">⚡ True or False — Activity 7 of 14</span>
+    <h4>A company with a book loss of $400,000 can never owe estimated taxes.</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act7',this,false)">True — a book loss means the IRS owes them money</button>
+      <button class="aopt" onclick="doAct('act7',this,true)">False — §174 add-backs and other adjustments can flip a book loss to taxable income</button>
+    </div>
+    <div class="act-fb" id="act7-fb"></div>
+  </div>
+
+  <!-- MATCHING ACTIVITY -->
+  <div class="activity" id="act8">
+    <span class="act-label">🔗 Match It — Activity 8 of 14</span>
+    <h4>Match each situation to the correct outcome. Select left, then right.</h4>
+    <div class="match-grid">
+      <div>
+        <h5>Situation</h5>
+        <div class="mi" id="ml0" onclick="mClick('L',0)">First-year corporation, profitable</div>
+        <div class="mi" id="ml1" onclick="mClick('L',1)">Company dissolved in Feb 2026</div>
+        <div class="mi" id="ml2" onclick="mClick('L',2)">Prior year Form 1120 Line 31 = $16,000</div>
+        <div class="mi" id="ml3" onclick="mClick('L',3)">Book loss, zero offshore contractors</div>
+      </div>
+      <div>
+        <h5>Outcome</h5>
+        <div class="mi" id="mr0" onclick="mClick('R',0)">Likely $0 — genuine loss, nothing to adjust</div>
+        <div class="mi" id="mr1" onclick="mClick('R',1)">Use current year projection method</div>
+        <div class="mi" id="mr2" onclick="mClick('R',2)">No Q2 estimate — short year</div>
+        <div class="mi" id="mr3" onclick="mClick('R',3)">Safe harbor: $4,000/quarter</div>
+      </div>
+    </div>
+    <button class="match-btn" id="mbtn" onclick="checkMatch()" disabled>Check matches</button>
+    <div class="match-res" id="mres"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 8 — WORKFLOW
+══════════════════════════════════ -->
+<section class="section" id="ch8" data-ch="8" data-title="Workflow">
+  <div class="ch-hdr"><div class="ch-num">08</div><div class="ch-info"><h2>The Inkle Workflow</h2><p>Six steps, every client, no exceptions</p></div></div>
+
+  <h3>This is the <em>process</em> — internalize it.</h3>
+
+  <div class="timeline">
+    <div class="tli"><div class="tldot">1</div><div><div class="tll">Pull the prior year Form 1120 — find Line 31</div><div class="tld">That's the tax liability. Your safe harbor base. If it's $0 or doesn't exist (first-year corp), skip to Step 3.</div></div></div>
+    <div class="tli"><div class="tldot">2</div><div><div class="tll">Check for NOL carryforward</div><div class="tld">Schedule K or prior returns. Note the amount. Remember: 80% cap applies. Carry it into your projection.</div></div></div>
+    <div class="tli"><div class="tldot">3</div><div><div class="tll">Review the current year P&L for adjustments</div><div class="tld">Look for: offshore contractor/dev spend → §174. Meals & entertainment → 50% disallowed. One-time/discontinued charges → flag for review. Stock compensation → check treatment.</div></div></div>
+    <div class="tli"><div class="tldot">4</div><div><div class="tll">Run all applicable add-backs</div><div class="tld">§174: offshore spend ÷ 15 ÷ 2 = allowed. Rest = add-back. Meals: 50% of total = add-back. Then apply 80% NOL cap to the resulting taxable income.</div></div></div>
+    <div class="tli"><div class="tldot">5</div><div><div class="tll">Choose the method and calculate</div><div class="tld">Safe harbor available? Line 31 ÷ 4. Not available? (Taxable income × 21%) × 50% cumulative − Q1 already paid.</div></div></div>
+    <div class="tli"><div class="tldot">6</div><div><div class="tll">Flag, escalate if needed, track everything</div><div class="tld">Anything unclear (new product line, unusual charges, unclassified contractors)? Flag it. Don't guess. Escalate to tax review. Update the eight-column tracker.</div></div></div>
+  </div>
+
+  <div class="callout">📋 <strong>The eight-column tracker:</strong><br>Annual tax &nbsp;·&nbsp; NOL &nbsp;·&nbsp; Q1 Tax (last return) &nbsp;·&nbsp; Q1 status &nbsp;·&nbsp; Q2 payment needed &nbsp;·&nbsp; Reason for $0 &nbsp;·&nbsp; To check with client &nbsp;·&nbsp; Notes</div>
+
+  <!-- SORT ACTIVITY -->
+  <div class="activity" id="act9">
+    <span class="act-label">🔀 Sort It — Activity 9 of 14</span>
+    <h4>Drag to put the workflow steps in the correct order</h4>
+    <ul class="sortlist" id="sortlist">
+      <li class="sitem" draggable="true" data-order="3"><span class="shandle">⠿</span>Run all applicable add-backs (§174, meals, etc.)</li>
+      <li class="sitem" draggable="true" data-order="0"><span class="shandle">⠿</span>Pull the prior year Form 1120 — find Line 31</li>
+      <li class="sitem" draggable="true" data-order="4"><span class="shandle">⠿</span>Choose the method and calculate the Q2 estimate</li>
+      <li class="sitem" draggable="true" data-order="1"><span class="shandle">⠿</span>Check for NOL carryforward balance</li>
+      <li class="sitem" draggable="true" data-order="5"><span class="shandle">⠿</span>Flag unclear items, escalate if needed, update tracker</li>
+      <li class="sitem" draggable="true" data-order="2"><span class="shandle">⠿</span>Review P&L for adjustments — offshore dev, meals, one-time charges</li>
+    </ul>
+    <button class="sort-btn" onclick="checkSort()">Check order</button>
+    <div class="sort-res" id="sort-res"></div>
+  </div>
+
+  <div class="activity" id="act10">
+    <span class="act-label">🎯 Quick Check — Activity 10 of 14</span>
+    <h4>When reviewing a client P&L, you see a $200K "Project Discontinuation" expense. What do you do?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act10',this,false)">Treat it as a normal expense — fully deductible</button>
+      <button class="aopt" onclick="doAct('act10',this,true)">Flag it for tax review — one-time discontinuation charges have special IRS treatment and can't be assumed fully deductible</button>
+      <button class="aopt" onclick="doAct('act10',this,false)">Ignore it since it's a one-time expense and won't recur</button>
+      <button class="aopt" onclick="doAct('act10',this,false)">Add the full $200K back to taxable income automatically</button>
+    </div>
+    <div class="act-fb" id="act10-fb"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+  CH 9 — CHEAT SHEET + FINAL
+══════════════════════════════════ -->
+<section class="section" id="ch9" data-ch="9" data-title="Cheat Sheet">
+  <div class="ch-hdr"><div class="ch-num">09</div><div class="ch-info"><h2>Cheat Sheet + Final Challenges</h2><p>Everything in one place — and four final tests</p></div></div>
+
+  <h3>Screenshot this. <em>Seriously.</em></h3>
+  <table class="tbl">
+    <thead><tr><th>Term</th><th>Plain English</th><th>Key number</th></tr></thead>
+    <tbody>
+      <tr><td class="hl">Estimated tax</td><td>Quarterly IRS installments on expected annual tax</td><td>4× per year</td></tr>
+      <tr><td class="hl">§6655</td><td>IRS rule governing estimated tax underpayment penalties</td><td>$500 floor</td></tr>
+      <tr><td class="hl">Safe harbor</td><td>Pay last year's full tax in 4 equal parts → penalty-proof</td><td>Line 31 ÷ 4</td></tr>
+      <tr><td class="hl">Q2 cumulative</td><td>By June 16, Q1+Q2 combined must = 50% of annual estimate</td><td>50%</td></tr>
+      <tr><td class="hl">§174 (foreign)</td><td>Offshore R&E → 15-year amortization, mid-year convention</td><td>÷ 15 ÷ 2</td></tr>
+      <tr><td class="hl">§174 (domestic)</td><td>US R&E → immediately fully deductible (post-OBBBA)</td><td>100% Year 1</td></tr>
+      <tr><td class="hl">Meals & entertainment</td><td>Only 50% of business meals deductible — other 50% added back</td><td>50% cap</td></tr>
+      <tr><td class="hl">Book-to-tax adj.</td><td>Gap between accounting profit and IRS taxable income</td><td>Always check</td></tr>
+      <tr><td class="hl">NOL carryforward</td><td>Past losses reduce future taxable income — post-2017 no expiry</td><td>80% cap</td></tr>
+      <tr><td class="hl">C-corp rate</td><td>Flat federal income tax rate</td><td>21%</td></tr>
+      <tr><td class="hl">Q4 C-corp date</td><td>December 15, not January (corporations ≠ individuals)</td><td>Dec 15</td></tr>
+      <tr><td class="hl">Mid-year convention</td><td>IRS assumes R&E started July 1 regardless of actual date</td><td>÷ 2 in Yr 1</td></tr>
+      <tr><td class="hl">PAYG</td><td>Pay As You Go — the whole philosophy behind estimated taxes</td><td>Quarterly</td></tr>
+    </tbody>
+  </table>
+
+  <!-- FLASH CARDS -->
+  <h4 style="margin-top:2rem">Flash cards — test yourself</h4>
+  <p class="flip-hint">Tap each card to see the answer</p>
+  <div class="flipgrid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What's the $500 rule exactly?</div><div class="flipcard-back">§6655: If a corporation expects to owe $500+ in federal tax, quarterly estimated payments are required. Below $500 = no payments, no penalty.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What does safe harbor actually protect against?</div><div class="flipcard-back">The underpayment penalty. Pay last year's full tax ÷ 4 each quarter and the IRS cannot charge you a penalty — even if you end up owing much more.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">How much of a meal expense can you deduct?</div><div class="flipcard-back">50%. The other 50% must be added back to taxable income. This applies to business meals, client dinners, team lunches — anything in the meals & entertainment category.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What is a book-to-tax adjustment?</div><div class="flipcard-back">The difference between what a company shows as profit/loss in its accounting books versus what the IRS actually taxes. §174 add-backs and meals disallowances are the main ones for our clients.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">What Form 1120 line number is the safe harbor base?</div><div class="flipcard-back">Line 31 — "Total tax." Divide by 4 to get each quarterly safe harbor payment. First stop for every client estimate.</div></div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner"><div class="flipcard-front">Why December 15 for Q4, not January?</div><div class="flipcard-back">C-corps have a different Q4 deadline than individuals. Individuals pay January 15. Corporations pay December 15 of the same year. Easy to mix up — always double-check.</div></div></div>
+  </div>
+
+  <hr class="div">
+
+  <!-- FINAL ACTIVITIES -->
+  <div class="activity" id="act11">
+    <span class="act-label">🔥 Hard Mode — Activity 11 of 14</span>
+    <h4>Company: $1M revenue · $1.5M expenses · $800K offshore dev · $50K meals · Prior year tax $0 · NOL $120K. Approximate Q2 cumulative estimate?</h4>
+    <p class="act-p">Hint: Run all adjustments in order. §174 first, meals second, then 80% NOL cap.</p>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act11',this,false)">$0 — book loss + NOL = nothing owed</button>
+      <button class="aopt" onclick="doAct('act11',this,false)">$0 — prior year $0 means safe harbor is $0</button>
+      <button class="aopt" onclick="doAct('act11',this,true)">Roughly $10,000–$20,000 — §174 + meals add-backs create taxable income, NOL reduces it, current year method applies</button>
+      <button class="aopt" onclick="doAct('act11',this,false)">~$80,000 — full §174 add-back, no adjustments</button>
+    </div>
+    <div class="act-fb" id="act11-fb" data-exp="Book loss: $1M − $1.5M = ($500K). §174: $800K ÷ 15 ÷ 2 = $26,667 allowed → add-back $773,333. Meals: $50K × 50% = $25,000 add-back. Taxable before NOL: ($500K) + $773,333 + $25,000 = $298,333. 80% NOL cap: 80% × $298,333 = $238,667 → can use $96,000 of NOL (limited by $120K available). After NOL: $298,333 − $96K... actually $120K is less than 80% cap, so use full $120K. After NOL: $178,333. Tax @ 21% = $37,450. Q2 (50%) ≈ $18,725. Prior year $0 → must use current year method."></div>
+  </div>
+
+  <div class="activity" id="act12">
+    <span class="act-label">📝 Fill in the Blank — Activity 12 of 14</span>
+    <h4>Complete the rule: "If a company's prior year tax was $0, the safe harbor base is _______ and the only available method is _______."</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act12',this,false)">$0 and safe harbor — you still file safe harbor with a $0 base</button>
+      <button class="aopt" onclick="doAct('act12',this,true)">$0 and current year projection — no prior base means you must project this year's income</button>
+      <button class="aopt" onclick="doAct('act12',this,false)">$500 and annualized income installment method</button>
+      <button class="aopt" onclick="doAct('act12',this,false)">Unknown and you ask the client to decide</button>
+    </div>
+    <div class="act-fb" id="act12-fb"></div>
+  </div>
+
+  <div class="activity" id="act13">
+    <span class="act-label">🏆 Final Challenge — Activity 13 of 14</span>
+    <h4>A client's books show a $300K loss. You spot $500K in offshore contractor payments and $80K in meals. They have a $200K NOL. What's the first thing you calculate?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act13',this,false)">Apply the NOL carryforward first to reduce the loss</button>
+      <button class="aopt" onclick="doAct('act13',this,false)">Check if the $500 floor is triggered</button>
+      <button class="aopt" onclick="doAct('act13',this,true)">Calculate the §174 add-back first — then meals — to get to taxable income before applying the NOL</button>
+      <button class="aopt" onclick="doAct('act13',this,false)">Confirm the prior year tax and use safe harbor — skip the adjustments</button>
+    </div>
+    <div class="act-fb" id="act13-fb"></div>
+  </div>
+
+  <div class="activity" id="act14">
+    <span class="act-label">💬 Real Talk — Activity 14 of 14</span>
+    <h4>A client says: "I checked online and it says we don't owe estimated taxes because we're unprofitable." Your response?</h4>
+    <div class="act-opts">
+      <button class="aopt" onclick="doAct('act14',this,false)">Agree — if they researched it, they're probably right</button>
+      <button class="aopt" onclick="doAct('act14',this,false)">Tell them online resources are wrong and they definitely owe</button>
+      <button class="aopt" onclick="doAct('act14',this,true)">Acknowledge their research, then explain that book profitability ≠ tax liability — you need to run the adjustments before concluding anything</button>
+      <button class="aopt" onclick="doAct('act14',this,false)">Ask them to consult another accountant to confirm</button>
+    </div>
+    <div class="act-fb" id="act14-fb"></div>
+  </div>
+</section>
+
+<!-- END -->
+<div class="end-section" id="end">
+  <div class="callout green" style="text-align:left;margin-bottom:2rem;max-width:100%">🎉 <strong>All 9 chapters and 14 activities done.</strong> You now understand estimated taxes better than most people who've been in finance for years. The concepts that trip up entire teams — §174, the NOL 80% cap, meals add-backs, the $0 assumption trap — you get all of them now.</div>
+  <div class="end-cards">
+    <div class="ec"><div class="ec-n">9</div><div class="ec-l">Chapters</div></div>
+    <div class="ec"><div class="ec-n">14</div><div class="ec-l">Activities</div></div>
+    <div class="ec"><div class="ec-n">$500</div><div class="ec-l">The threshold</div></div>
+    <div class="ec"><div class="ec-n">21%</div><div class="ec-l">C-corp rate</div></div>
+    <div class="ec"><div class="ec-n">80%</div><div class="ec-l">NOL cap</div></div>
+    <div class="ec"><div class="ec-n">÷30</div><div class="ec-l">§174 Yr 1</div></div>
+    <div class="ec"><div class="ec-n">50%</div><div class="ec-l">Meals cap</div></div>
+    <div class="ec"><div class="ec-n">Dec 15</div><div class="ec-l">Q4 C-corp</div></div>
+  </div>
+  <div class="end-logo">inkle <span>—</span></div>
+  <p class="end-sub">Tax · Accounting · Support · Internal Training · Q2 2026</p>
+</div>
+
+<script>
+// NAV & PROGRESS
+var CHS=[
+  {id:'ch1',t:'IRS Mindset'},{id:'ch2',t:'Four Dates'},{id:'ch3',t:'Calculation'},
+  {id:'ch4',t:'Book vs Tax'},{id:'ch5',t:'Section 174'},{id:'ch6',t:'NOL'},
+  {id:'ch7',t:'When $0'},{id:'ch8',t:'Workflow'},{id:'ch9',t:'Cheat Sheet'}
+];
+var de=document.getElementById('nav-dots');
+CHS.forEach(function(c,i){
+  var d=document.createElement('div');d.className='ndot';d.id='nd'+i;d.title=c.t;
+  d.onclick=function(){document.getElementById(c.id).scrollIntoView({behavior:'smooth'})};
+  de.appendChild(d);
+});
+var ach=-1,tt;
+function updNav(){
+  var sy=window.scrollY+120;
+  var tot=document.body.scrollHeight-window.innerHeight;
+  document.getElementById('prog-fill').style.width=(tot>0?Math.min(100,(window.scrollY/tot)*100):0)+'%';
+  var nc=-1;
+  CHS.forEach(function(c,i){var el=document.getElementById(c.id);if(el&&el.offsetTop<=sy)nc=i;});
+  if(nc!==ach){
+    ach=nc;
+    CHS.forEach(function(_,i){var d=document.getElementById('nd'+i);d.className='ndot'+(i<nc?' done':i===nc?' active':'')});
+    if(nc>=0){
+      document.getElementById('nav-ch').textContent=CHS[nc].t;
+      var tk=document.getElementById('ticker');
+      tk.textContent='Chapter '+(nc+1)+' — '+CHS[nc].t;
+      tk.classList.add('show');clearTimeout(tt);
+      tt=setTimeout(function(){tk.classList.remove('show')},1800);
+    }
+  }
+}
+window.addEventListener('scroll',updNav,{passive:true});updNav();
+
+// REVEAL
+function toggleRev(el){
+  el.classList.toggle('open');
+  var b=el.nextElementSibling;b.style.display=b.style.display==='block'?'none':'block';
+}
+
+// ACTIVITIES
+var EXPL={
+  act1:{c:'Exactly. Employees have withholding handled automatically. Business owners must pay the IRS directly each quarter. No one does it for them.',w:'Not quite. The core reason: business income has no automatic withholding. The IRS requires businesses to pay quarterly to keep cash flowing in throughout the year.'},
+  act2:{c:'Correct! Q1 + Q2 together must equal 50% of the full annual estimate by June 16. This is the 50% cumulative rule — and the reason Q2 can feel like a lot.',w:'Not quite. By Q2, the cumulative total (Q1 + Q2 combined) must equal 50% of the annual estimate — not just Q2 alone.'},
+  act3:{c:'Right! Safe harbor = prior year tax ÷ 4 = $40,000 ÷ 4 = $10,000. Simple, clean, penalty-proof.',w:'Not right. Safe harbor is simply last year\'s full tax divided equally over 4 quarters. $40,000 ÷ 4 = $10,000.'},
+  act4:{c:'Correct! Only 50% of business meals are deductible. The other $30,000 gets added back to taxable income. Small but consistent adjustment.',w:'Not right. The IRS only allows 50% of meals & entertainment as a deduction. $60,000 × 50% = $30,000 disallowed → add-back to taxable income.'},
+  act5:{c:'Nailed it. §174: $600K ÷ 15 ÷ 2 = $20K allowed. Add-back = $580K. Book loss ($300K) + $580K = $280K taxable income. Annual tax ≈ $58,800.',w:'Not quite. The §174 add-back on $600K offshore spend is $580K. That flips the ($300K) book loss to ~$280K taxable income. The IRS ignores the accounting loss entirely.'},
+  act6:{c:'Correct! TCJA caps NOL use at 80% of current taxable income. 80% × $200K = $160K. Remaining $40K is still taxable. The unused $140K carries forward.',w:'Not right. Post-2017 NOLs are capped at 80% of current year taxable income. You cannot use more than $160K this year.'},
+  act7:{c:'100% right. Book losses mean nothing to the IRS if §174 add-backs exist. Always run the adjustments — never assume $0 from a book loss alone.',w:'False. §174 add-backs, meals disallowances, and other adjustments can flip a $400K book loss into significant taxable income. Never assume.'},
+  act10:{c:'Exactly right. One-time discontinuation charges have variable IRS treatment — some are fully deductible, some must be capitalized. Flag it, escalate it. Don\'t guess.',w:'Incorrect. One-time charges like project discontinuations, severance, or asset write-downs have special IRS treatment. You cannot assume full deductibility without a tax review.'},
+  act11:{c:'Correct direction. Book loss ($500K) + §174 add-back ($773K) + meals ($25K) = $298K taxable income. After using the $120K NOL (within 80% cap): ~$178K taxable. Tax ~$37K. Q2 ≈ $18.7K. Prior year $0 means current year method. Definitely not $0.',w:'Not right. §174 on $800K offshore spend adds ~$773K. Meals adds $25K. Total taxable income before NOL ~$298K. After NOL ~$178K. Tax ~$37K. Q2 estimate ~$18.7K.'},
+  act12:{c:'Correct! Prior year tax of $0 means the safe harbor base is $0 — there\'s nothing to divide by 4. You must switch to the current year projection method.',w:'Not right. A $0 prior year base means safe harbor literally provides no protection. You must project the current year\'s income and calculate from that.'},
+  act13:{c:'Right process. §174 first (it creates the biggest add-back). Then meals (50% disallowed). Only after you have the true taxable income do you apply the 80% NOL cap. Order matters.',w:'Not right. The NOL only applies to taxable income — and you don\'t have taxable income until you\'ve run the §174 and meals add-backs first. Always: adjust first, then apply NOL.'},
+  act14:{c:'Perfect. Acknowledge that they did research. Then explain gently that accounting profitability and tax liability are different things — the IRS uses its own rules, not GAAP. Offer to run the adjustments.',w:'Not the right approach. The client did their research in good faith. Acknowledge that, then explain the book-vs-tax distinction. The goal is to educate, not dismiss.'}
+};
+
+function doAct(id,btn,isOk){
+  var wrap=document.getElementById(id);
+  var btns=wrap.querySelectorAll('.aopt');
+  btns.forEach(function(b){b.disabled=true});
+  var corBtn=wrap.querySelector('.aopt[onclick*="true"]');
+  if(isOk){btn.classList.add('correct');}
+  else{btn.classList.add('wrong');if(corBtn)corBtn.classList.add('reveal');}
+  var fb=document.getElementById(id+'-fb');
+  var custom=fb.getAttribute('data-exp');
+  var e=EXPL[id];
+  var msg=custom||(isOk?e.c:e.w);
+  fb.className='act-fb '+(isOk?'ok':'no');
+  fb.textContent=(isOk?'✓ Correct! ':'✗ Incorrect. ')+msg;
+  fb.style.display='block';
+}
+
+// CALCULATOR
+function calcUpdate(){
+  var m=document.getElementById('cm').value;
+  document.getElementById('cf-p').style.display=m==='prior'?'':'none';
+  document.getElementById('cf-c').style.display=m==='current'?'':'none';
+  var q1=parseFloat(document.getElementById('cv-q1').value)||0;
+  var ann=0,note='';
+  if(m==='prior'){
+    var p=parseFloat(document.getElementById('cv-p').value)||0;
+    ann=p;note='Safe harbor: $'+fmt(p)+' ÷ 4 per quarter';
+  } else {
+    var inc=parseFloat(document.getElementById('cv-c').value)||0;
+    ann=inc*0.21;note='Projection: $'+fmt(inc)+' × 21% = $'+fmt(ann)+' annual tax';
+  }
+  var q2=Math.max(0,ann*.5-q1);
+  document.getElementById('cr-val').textContent='$'+fmt(q2);
+  document.getElementById('cr-note').textContent=note;
+}
+function fmt(n){return Math.round(n).toLocaleString('en-US')}
+calcUpdate();
+
+// MATCHING
+var MCOR={0:1,1:2,2:3,3:0};
+var lSel=null,rSel=null,matched={};
+function mClick(side,idx){
+  if(matched[side+idx]) return;
+  if(side==='L'){
+    if(lSel!==null) document.getElementById('ml'+lSel).classList.remove('sel');
+    lSel=idx;document.getElementById('ml'+idx).classList.add('sel');
+  } else {
+    if(rSel!==null) document.getElementById('mr'+rSel).classList.remove('sel');
+    rSel=idx;document.getElementById('mr'+idx).classList.add('sel');
+  }
+  document.getElementById('mbtn').disabled=(lSel===null||rSel===null);
+}
+function checkMatch(){
+  if(lSel===null||rSel===null) return;
+  var ok=MCOR[lSel]===rSel;
+  var le=document.getElementById('ml'+lSel),re=document.getElementById('mr'+rSel);
+  le.classList.remove('sel');re.classList.remove('sel');
+  le.classList.add(ok?'mok':'mno');re.classList.add(ok?'mok':'mno');
+  if(!ok){setTimeout(function(){le.classList.remove('mno');re.classList.remove('mno')},900);}
+  else{matched['L'+lSel]=true;matched['R'+rSel]=true;}
+  lSel=null;rSel=null;
+  document.getElementById('mbtn').disabled=true;
+  if(Object.keys(matched).length>=8) document.getElementById('mres').innerHTML='<span style="color:var(--green);font-weight:600">✓ All matched correctly!</span>';
+}
+
+// DRAG SORT
+var dSrc=null;
+document.querySelectorAll('.sitem').forEach(function(el){
+  el.addEventListener('dragstart',function(){dSrc=this;this.classList.add('dragging')});
+  el.addEventListener('dragend',function(){this.classList.remove('dragging');document.querySelectorAll('.sitem').forEach(function(e){e.classList.remove('over')})});
+  el.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('over')});
+  el.addEventListener('dragleave',function(){this.classList.remove('over')});
+  el.addEventListener('drop',function(e){
+    e.preventDefault();this.classList.remove('over');
+    if(dSrc&&dSrc!==this){
+      var l=this.parentNode,items=Array.from(l.children);
+      var si=items.indexOf(dSrc),ti=items.indexOf(this);
+      if(si<ti)l.insertBefore(dSrc,this.nextSibling);else l.insertBefore(dSrc,this);
+    }
+  });
+});
+function checkSort(){
+  var items=Array.from(document.querySelectorAll('.sitem'));
+  var orders=items.map(function(i){return parseInt(i.getAttribute('data-order'))});
+  var ok=JSON.stringify(orders)===JSON.stringify([0,1,2,3,4,5]);
+  var res=document.getElementById('sort-res');
+  if(ok){res.innerHTML='<span style="color:var(--green);font-weight:600">✓ Perfect! That\'s the exact six-step workflow.</span>';}
+  else{
+    var wrong=[];
+    orders.forEach(function(o,i){if(o!==i)wrong.push('Step '+(i+1))});
+    res.innerHTML='<span style="color:var(--red)">Not quite — '+wrong.join(', ')+' out of place. Keep trying!</span>';
+  }
+}
+</script>
+</body>
+</html>
